@@ -12,11 +12,9 @@ class Model(Chain):
   def __init__(self):
     super(Model, self).__init__(
       l1 = L.Linear(4, 16),
-      l2 = L.Linear(16, 32),
-      l3 = L.Linear(32, 64),
-      l4 = L.Linear(64, 32),
-      l5 = L.Linear(32, 16),
-      l6 = L.Linear(16, 2),
+      l2 = L.Linear(16, 2048),
+      l3 = L.Linear(2048, 16),
+      l4 = L.Linear(16, 2),
     )
 
   def __call__(self, x, y):
@@ -26,9 +24,7 @@ class Model(Chain):
     h1 = F.leaky_relu(self.l1(x))
     h2 = F.leaky_relu(self.l2(h1))
     h3 = F.leaky_relu(self.l3(h2))
-    h4 = F.leaky_relu(self.l4(h3))
-    h5 = F.leaky_relu(self.l5(h4))
-    y = F.leaky_relu(self.l6(h5))
+    y = F.leaky_relu(self.l4(h3))
     return y
 
 
@@ -40,8 +36,8 @@ class Agent:
     self.experience = []
     self.max_experience = 300 * 100
     self.epsilon = 0.99
-    self.decay = 0.999
-    self.batch_size = 256 
+    self.decay = 0.0005
+    self.batch_size = 64 
     self.gamma = 0.9
     self.loss = None 
   
@@ -54,7 +50,7 @@ class Agent:
     action = 0
     if np.random.random() < self.epsilon:
       action = random.randint(0,1)
-      self.epsilon = self.decay * self.epsilon
+      self.epsilon -= self.decay
       # print("random action: %f, epsilon: %f" % (action, self.epsilon))
     else:
       action = np.argmax(self.predict_action(state))
@@ -64,8 +60,8 @@ class Agent:
   def save_experience(self, exp):
     self.experience.append(exp)
     # self.experience.sort(key=lambda x:x["reward"])
-    while len(self.experience) > self.max_experience:
-      self.experience.pop
+    if len(self.experience) > self.max_experience:
+      self.experience.pop(0)
 
   def replay(self):
     if len(self.experience) < self.batch_size:
