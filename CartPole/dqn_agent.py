@@ -34,7 +34,7 @@ class Agent:
     self.optimizer = optimizers.Adam()
     self.optimizer.setup(self.model)
     self.experience = []
-    self.max_experience = 300 * 100
+    self.max_experience = 300 * 10
     self.epsilon = 0.99
     self.decay = 0.0005
     self.batch_size = 64 
@@ -58,10 +58,19 @@ class Agent:
     return action
 
   def save_experience(self, exp):
-    self.experience.append(exp)
-    # self.experience.sort(key=lambda x:x["reward"])
-    if len(self.experience) > self.max_experience:
+    self.experience += exp
+    self.experience.sort(key=lambda x:x["total_rewards"])
+    exp_size = len(self.experience)
+    while exp_size > self.max_experience:
       self.experience.pop(0)
+      exp_size = len(self.experience)
+
+    # for i in range(3):
+    print("    min exp      : %f" % self.experience[0]["total_rewards"])
+
+
+    # for i in range(3):
+    print("    max exp      : %f" % self.experience[len(self.experience) - 1]["total_rewards"])
 
   def replay(self):
     if len(self.experience) < self.batch_size:
@@ -112,11 +121,14 @@ class Trainer:
         state, reward, done, info = env.step(action)
         total_rewards += reward
         new_state = state.copy()
-        self.agt.save_experience({"old_state": old_state, "action": action, "reward": reward, "new_state": new_state, "done": done})
-        if done:
+        self.exp.append({"old_state": old_state, "action": action, "reward": reward, "new_state": new_state, "done": done})
+        if done or t == 299:
+          for i in range(len(self.exp)):
+            self.exp[i]["total_rewards"] = total_rewards
           # with open(self.logfile, 'w') as f:
           #   f.write(str(self.episode) + ',' + str(t) + '\n')
           print("    timestamp    : %d" % t)
+          self.agt.save_experience(self.exp)
           break
 
       self.agt.replay()
