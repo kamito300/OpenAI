@@ -12,10 +12,10 @@ import copy as cp
 class Model(Chain):
   def __init__(self):
     super(Model, self).__init__(
-      l1 = L.Linear(4, 8),
-      l2 = L.Linear(8, 512),
-      l3 = L.Linear(512, 4),
-      l4 = L.Linear(4, 2),
+      l1 = L.Linear(4, 32),
+      l2 = L.Linear(32, 512),
+      l3 = L.Linear(512, 32),
+      l4 = L.Linear(32, 2),
     )
 
   def __call__(self, x, y):
@@ -114,8 +114,9 @@ class Trainer:
 
   def train(self):
     env = gym.make('CartPole-v0')
-    # with open(self.logfile, 'w') as f:
-    #   f.write('episode, timestamp')
+    # env.monitor.start("tmp/ex1")
+    with open(self.logfile, 'w') as f:
+      f.write('episode, timestamp')
     for i in range(30000):
       print("episode: %d" % i)
       print("    epsilon      : %f" % self.agt.epsilon)
@@ -135,8 +136,8 @@ class Trainer:
         if done or t == 199:
           for j in range(len(self.exp)):
             self.exp[j]["total_rewards"] = total_rewards
-          # with open(self.logfile, 'w') as f:
-          #   f.write(str(self.episode) + ',' + str(t) + '\n')
+          with open(self.logfile, 'a') as f:
+            f.write(str(self.episode) + ',' + str(t) + '\n')
           print("    timestamp    : %d" % t)
           self.agt.save_experience(self.exp)
           break
@@ -149,6 +150,6 @@ class Trainer:
       if i % 16 == 0:
         print("    ## update target model")
         self.agt.update_target_model()
-
+    # env.monitor.close()
 trainer = Trainer()
 trainer.train()
