@@ -12,10 +12,10 @@ import copy as cp
 class Model(Chain):
   def __init__(self):
     super(Model, self).__init__(
-      l1 = L.Linear(4, 16),
-      l2 = L.Linear(16, 4096),
-      l3 = L.Linear(4096, 16),
-      l4 = L.Linear(16, 2),
+      l1 = L.Linear(4, 8),
+      l2 = L.Linear(8, 512),
+      l3 = L.Linear(512, 4),
+      l4 = L.Linear(4, 2),
     )
 
   def __call__(self, x, y):
@@ -36,11 +36,11 @@ class Agent:
     self.optimizer = optimizers.Adam()
     self.optimizer.setup(self.model)
     self.experience = []
-    self.max_experience = 500
+    self.max_experience =100 * 500 
     self.epsilon = 0.99
-    self.decay = 0.999
+    self.decay = 0.9992
     self.batch_size = 32 
-    self.gamma = 0.92
+    self.gamma = 0.85
     self.loss = None 
   
 
@@ -146,7 +146,7 @@ class Trainer:
         print("    loss         : %f" % self.agt.loss.data)
         print("    total rewards: %f" % total_rewards)
 
-      if i % 32 == 0:
+      if i % 16 == 0:
         print("    ## update target model")
         self.agt.update_target_model()
 
