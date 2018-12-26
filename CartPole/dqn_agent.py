@@ -116,7 +116,7 @@ class Trainer:
     env = gym.make('CartPole-v0')
     # env.monitor.start("tmp/ex1")
     with open(self.logfile, 'w') as f:
-      f.write('episode, timestamp')
+      f.write('episode, timestamp\n')
     for i in range(30000):
       print("episode: %d" % i)
       print("    epsilon      : %f" % self.agt.epsilon)
